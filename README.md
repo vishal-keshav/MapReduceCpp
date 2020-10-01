@@ -11,3 +11,7 @@ An implementation of multithreaded version of MapReduce that simulates the fault
 'extra' Contains source code to test new ideas and concepts.
 'bin' Automatically generated on building the project. Contains the executable binaries.
 'build' Automatically generated on building the project. Contains the intermediate compiled files.
+
+
+Contributor:
+Jessie Huo
