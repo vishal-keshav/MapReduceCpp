@@ -21,6 +21,9 @@ An implementation of multithreaded version of MapReduce that simulates the fault
 
 ## API specifications
 
+### High-level Architecture
+![architecture](extra/DesignDiagram/high_level_design.png "High-level design")
+
 ### Sample client program
 
 ```Python
@@ -111,4 +114,5 @@ class Worker {
 
 ### Contributors:
 Jessie Huo
+
 Vishal Keshav
