@@ -19,7 +19,7 @@ public:
         int (*r_fn)(std::string k, std::vector<int> values)
         ): inputFileName(f_name), outputResultDirectory(out_dir),
           map_fn(m_fn), reduce_fn(r_fn){}
-private:
+public:
     std::string inputFileName;
     std::string outputResultDirectory;
     std::vector<std::pair<std::string, int>> (*map_fn)(
