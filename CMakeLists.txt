@@ -10,10 +10,13 @@ add_library(
     include/MapReduceConfiguration.hpp
     include/MapReduceResult.hpp
     include/MapReduceMaster.hpp
+    src/MapReduceMaster.cpp
     include/MapperResult.hpp
     include/Mapper.hpp
+    src/Mapper.cpp
     include/ReducerResult.hpp
     include/Reducer.hpp
+    src/Reducer.cpp
     src/HelloWorld.cpp
     )
 
@@ -36,3 +39,7 @@ add_test(
 include_directories(${PROJECT_SOURCE_DIR}/include/)
 add_executable(TestApp TestApp.cpp)
 target_link_libraries(TestApp PUBLIC MapReduceCpp)
+
+include_directories(${PROJECT_SOURCE_DIR}/include/)
+add_executable(ClientApp ClientApp.cpp)
+target_link_libraries(ClientApp PUBLIC MapReduceCpp)
