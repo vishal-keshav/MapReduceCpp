@@ -22,5 +22,13 @@ add_test(
 
 
 include_directories(${PROJECT_SOURCE_DIR}/include/)
-add_executable(ClientApp src/ClientApp.cpp)
-target_link_libraries(ClientApp PUBLIC MapReduceCpp)
+add_executable(WordCounter src/WordCounter.cpp)
+target_link_libraries(WordCounter PUBLIC MapReduceCpp)
+
+include_directories(${PROJECT_SOURCE_DIR}/include/)
+add_executable(InvertedIndex src/InvertedIndex.cpp)
+target_link_libraries(InvertedIndex PUBLIC MapReduceCpp)
+
+include_directories(${PROJECT_SOURCE_DIR}/include/)
+add_executable(ReverseWeblinkGraph src/ReverseWeblinkGraph.cpp)
+target_link_libraries(ReverseWeblinkGraph PUBLIC MapReduceCpp)
