@@ -50,9 +50,9 @@ int main() {
 
     // Now interpred the result of MapReduce
     if (result == -1){
-        cout << "MapReduce failed" << endl;
+        cout << "WordCounter MapReduce failed" << endl;
     } else {
-        cout << "MapReduce success" << endl;
+        cout << "WordCounter MapReduce success" << endl;
     }
 
 
