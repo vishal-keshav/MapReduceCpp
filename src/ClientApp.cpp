@@ -12,9 +12,7 @@
 
 #include <utility>
 
-#include "MapReduceMaster.hpp"
-#include "MapReduceConfiguration.hpp"
-#include "MapReduceResult.hpp"
+#include "MapReduceMaster.h"
 
 using namespace std;
 
@@ -35,26 +33,23 @@ vector<pair<string, int>> map_fn(string k, string value) {
 }
 
 // User defined reduce function for word counter application
-int reduce_fn(string k, vector<int> values) {
-    int ret = 0;
+vector<int> reduce_fn(string k, vector<int> values) {
+    vector<int> ret;
+    int count = 0;
     for (int i =0; i<values.size(); i++) {
-        ret += values[i];
+        count += values[i];
     }
+    ret.push_back(count);
     return ret;
 }
 
 
 int main() {
-    // Create a configuration (to be passed to mapreduce master)
-    // By default, nr_mapper and nr_reducer is set 1
-    MapReduceConfiguration config("input.txt", ".", &map_fn, &reduce_fn);
-
-    // Now create an instance of MapReduceMaster and call process with config
-    MapReduceMaster masterInstance;
-    MapReduceResult result = masterInstance.process(config);
+    MapReduceMaster<string, string, string, int, int> masterInstance("input.txt", ".", map_fn, reduce_fn);
+    int result = masterInstance.process();
 
     // Now interpred the result of MapReduce
-    if (result.getResult() == -1){
+    if (result == -1){
         cout << "MapReduce failed" << endl;
     } else {
         cout << "MapReduce success" << endl;
