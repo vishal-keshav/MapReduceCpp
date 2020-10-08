@@ -45,6 +45,7 @@ vector<int> reduce_fn(string k, vector<int> values) {
 
 
 int main() {
+    // This is a smaple implementation for word counter application.
     MapReduceMaster<string, string, string, int, int> masterInstance("input.txt", ".", map_fn, reduce_fn);
     int result = masterInstance.process();
 
@@ -54,7 +55,5 @@ int main() {
     } else {
         cout << "WordCounter MapReduce success" << endl;
     }
-
-
     return 0;
 }

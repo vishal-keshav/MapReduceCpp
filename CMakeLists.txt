@@ -11,6 +11,7 @@ add_library(
     src/Temp.cpp
     )
 
+
 add_subdirectory(lib/googletest)
 add_executable(UnitTests
     test/UnitTest1.cpp)
@@ -23,12 +24,12 @@ add_test(
 
 include_directories(${PROJECT_SOURCE_DIR}/include/)
 add_executable(WordCounter src/WordCounter.cpp)
-target_link_libraries(WordCounter PUBLIC MapReduceCpp)
+target_link_libraries(WordCounter PUBLIC MapReduceCpp pthread)
 
 include_directories(${PROJECT_SOURCE_DIR}/include/)
 add_executable(InvertedIndex src/InvertedIndex.cpp)
-target_link_libraries(InvertedIndex PUBLIC MapReduceCpp)
+target_link_libraries(InvertedIndex PUBLIC MapReduceCpp pthread)
 
 include_directories(${PROJECT_SOURCE_DIR}/include/)
 add_executable(ReverseWeblinkGraph src/ReverseWeblinkGraph.cpp)
-target_link_libraries(ReverseWeblinkGraph PUBLIC MapReduceCpp)
+target_link_libraries(ReverseWeblinkGraph PUBLIC MapReduceCpp pthread)
