@@ -84,5 +84,5 @@ void reduce_worker(string outputResultDirectory, vector<v3> (*reduce_fn)(k2, vec
         reduced_data.insert(pair<k2, vector<v3>>(elem.first, reduce_fn(elem.first, elem.second)));
     }
     // Save the data into output.txt file in the specified output directory.
-    write_map(outputResultDirectory + "/output.txt", reduced_data);
+    write_map(outputResultDirectory + "_output.txt", reduced_data);
 }
