@@ -8,6 +8,7 @@
 
 using namespace std;
 
+// reads the output files of mapper and aggregate values of the same key
 template <typename T1, typename T2>
 map<T1, vector<T2>> read_text(string inputTextFile) {
     map<T1, vector<T2>> data;
