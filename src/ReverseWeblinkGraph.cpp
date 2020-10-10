@@ -38,7 +38,6 @@ vector<string> reduce_fn(string target, vector<string> source) {
     for (int i =0; i<source.size(); i++) {
         sources.push_back(source[i]);
     }
-    // cout << to_string(sources);
     return sources;
 }
 
