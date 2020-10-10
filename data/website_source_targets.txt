@@ -1,0 +1,10 @@
+cnn.com,nytimes.com
+cnn.com,twitter.com
+cnn.com,wikipedia.com
+google.com,wikipedia.com
+google.com,twitter.com
+google.com,nytimes.com
+google.com,facebook.com
+facebook.com,wikipedia.com
+facebook.com,twitter.com
+facebook.com,nytimes.com
