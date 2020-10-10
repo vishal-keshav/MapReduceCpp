@@ -1,118 +1,84 @@
 # MapReduceCpp
-An implementation of multithreaded version of MapReduce that simulates the fault tolerance.
+An implementation of multithreaded version of MapReduce that simulates the fault tolerance on a single machine.
+
+## For the purpose of project evaluation, please follow the step-by-step guidlines
+### Requirements
+* Since the the project is implemented in C++, you should have atleast C++17 installed on your system.
+* Since the project uses CMake to build the project (the MapReduce library and three use-case programs), CMake >= 3.15 should be installed on your system.
+### Script to automatically build and run sample programs.
+`sh script.sh`
+
+Running this command builds the `libMapReduceCpp.so` library, builds three sample program namely `WordCounter`, `InvertedIndex` and `ReverseWeblinkGaph` (and links the library to these programs). All the builds are placed in a directory `build` (will be created automatically). The output of the three programs are also placed in the `build` director (WordCounter_output.txt, InvertedIndex_output.txt and ReverseWeblinkGraph_output.txt). Please check the corresponding inputs to these program in the `data` directory.
+
+## Project details
+
+### Implementation
+The MapReduceCpp is a header only library. The source code for the library can be found in `include` directory. Most importantly, `include/MapReduceMaster.h` is the entry point to use this library. This header file when included into a program, provided the access to an object `MapReduceMaster` and an API `process()` to start the processing. Refer below the pseudo program to understand the API.
+
+```C++
+
+#include "MapReduceMaster.h"
+
+vector<pair<key2, value2>> map_function(key1, value1) {
+    // Your map function implementation here
+}
+
+vector<value3> reduce_function(key2, vector<value2>) {
+    // Your reduce function implementation here
+}
+
+int main() {
+    MapReduceMaster<key1, value1, key2, value2, value3> masterObj;
+    int status = masterObj.process(inputFile, outputFile, map_function, reduce_function, nr_mapper, nr_reducer);
+    if (status == 0) {
+        cout << "MapReduce completed" << endl;
+    }
+    return 0;
+}
+
+```
+
+Notice that typename `key1`, `value1`, `key2`, `value2` and `value3`. These are defined by the user of MapReduce library and depends on your signature of map and reduce function definition.
+
+Please check sample implementation of WordCounter in the file `src/WordCounter.cpp`, InvertedIndex in the file `src/invertedIndex.cpp` and ReverseWeblinkGraph in the file `src/ReverseWeblinkGraph.cpp` for more details.
+
+### High-level design
+A high level design of the library is shown below:
+![architecture](extra/DesignDiagram/high_level_design.png "High-level design")
+
 
 ### Project Structure
 `doc` Contains documentation related to the project, how to build the project and other pointers relevant to C++ programming.
 
-`include` Contains header files
+`include` Contains header files of the MapReduceCpp library.
 
-`src` Contains the source file for the library
+`src` Contains the source file of the programs that uses MapReduceCpp library.
 
-`test` All code to test the modules
+`test` Contains unittests, uses googletest
 
-`lib` Extra libraries on which the project depends on
+`lib` Extra libraries on which the project depends on, these comes along with the package.
 
-`extra` Contains source code to test new ideas and concepts.
+`extra` Contains source code to test new ideas, concepts and design.
 
-`bin` Automatically generated on building the project. Contains the executable binaries.
+`build` Automatically generated on building the project. Contains the intermediate compiled files and the compiled MapReduceCpp library.
 
-`build` Automatically generated on building the project. Contains the intermediate compiled files.
+## Project Implementation
 
+### Master
+Master is implemented by MapReduceMaster class, which initializes with the input file name, output file name, map function pointer, reduce function pointer, and number of worker threads. On calling the process function, it creates the several workers for map, waits for each of the thread to return a success signal, then creates and lanches workers for reduce. Once all threads are returned, the master returns with a success signal.
 
-## API specifications
+The client program can invoke the process in a seperate thread without blocking, however, this is optional.
 
-### High-level Architecture
-![architecture](extra/DesignDiagram/high_level_design.png "High-level design")
+### Mapper
+Mapper is a logical entity, which is implemented in the process() method of the MapReduceMaster class.
 
-### Sample client program
+### Reducer
+Reducer is a logical entity, which is implemented in the process() method of the MapReduceMaster class.
 
-```Python
-# In the initial version of program, we only allow processing 
-# a text file where each line is a record.
-source_file_location = "/home/file/hamlet.txt"
-output_directory = "/home/hamletout"
-nr_mapper = 4
-nr_reducer = 2
+### Workers
+TODO
 
-# specification of map user defined function
-def udf_map(line_content):
-    ret = []
-    for word in line_content.split():
-        ret.append((word, 1))
-    return ret
-# specification of reduce user defined function
-def udf_reduce(word, count_list):
-    ret = 0
-    for count in count_list:
-        ret += count
-    return ret
-
-# Create an instance of MapReduce by providing the specifications
-mapReduce = MapReduceCpp(nr_mapper, nr_reducer)
-
-# Execute the MapReduce processing (possible in a seperate thread)
-sig = mapReduce.run(source_file_location, output_directory, udf_map, udf_reduce)
-if sig == 'SUCCESS':
-    return
-else:
-    print("Something went wrong")
-```
-
-### Master signature
-Master lets client initialize an instance of itself and accepts number of mapper
-and number of reducer in it's constructor.
-
-Master exposes a public function `run` that accepts source_file_location
-, output_directory and user defined function for map and reduce.
-
-```C++
-class Master {
-    public:
-        Master(int nr_mapper, int nr_reducer);
-        int run(string source_file_name, string output_directory,
-                (Iterator) map(String), String reduce(String, Iterator));
-};
-```
-
-### Map Coordinator Signature
-Map coordinator's main job is to take command from Master about executing the
-map user defined function on nr_mapper threads and return the back the location
-of temporary written files. Returns a MapperResult object once the task is done.
-The MapperResult contains the success/failure along with the location in which
-mapped partition are written.
-
-Later, this module will extended to have fault tolerance.
-
-```C++
-class MapCoordinator {
-    public:
-        MapperResult run_mapper(string source_file_name, (Iterator) map(String),
-                int nr_mapper);
-};
-```
-
-### Reduce Coordinator Signature
-Takes the temporary partition from master and starts the reduction job.
-
-```C++
-class ReduceCoordinator {
-    public:
-        ReducerResult run_reducer(string temporary_partitioned_files, 
-            (int) reduce(int, Iterator), int nr_reducer);
-};
-```
-
-### Worker Signature
-A single unit of thread that execute an arbitrary function in one thread.
-
-```C++
-class Worker {
-    public:
-        int execute(function_pointer);
-}
-```
-
-### Contributors:
+## Contributors:
 Jessie Huo
 
 Vishal Keshav
