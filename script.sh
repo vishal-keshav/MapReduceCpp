@@ -4,4 +4,6 @@ cmake ..
 cmake --build .
 cp -r ../data/* .
 ./WordCounter
-echo "Output is written in build/output.txt"
+echo "Output is written in build/WordCounter_output.txt"
+./InvertedIndex
+echo "Output is written in build/InvertedIndex_output.txt"

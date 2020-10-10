@@ -10,6 +10,7 @@ It reads the file /data/input_InvInd.txt and lists all positions of a word in .
 #include <vector>
 #include <map>
 #include <utility>
+#include <algorithm>
 
 #include "MapReduceMaster.h"
 
@@ -36,17 +37,17 @@ vector<pair<string, int>> map_fn(string k, string value) {
 // user defined reduce function
 vector<int> reduce_fn(string k, vector<int> values) {
     vector<int> ret;
-    for (int i = 0; i < sizeof(values); i++){
-        if (find(ret.begin(), ret.end(), values[i]) == ret.end())
-            // values[i] is a new element (position of the word)
-            ret.push_back(values[i]);
+    for (int i = 0; i < values.size(); i++){
+        ret.push_back(values[i]);
     }
+    sort(ret.begin(), ret.end());
+    ret.erase(unique(ret.begin(), ret.end()), ret.end());
     return ret;
 }
 
 int main() {
     // Create master instance.
-    MapReduceMaster<string, string, string, int, int> masterInstance("input.txt", ".", map_fn, reduce_fn);
+    MapReduceMaster<string, string, string, int, int> masterInstance("InvertedIndexInput.txt", "InvertedIndex", map_fn, reduce_fn);
     int result = masterInstance.process();
 
     // Now interpred the result of MapReduce
