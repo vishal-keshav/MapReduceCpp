@@ -44,7 +44,7 @@ vector<string> reduce_fn(string target, vector<string> source) {
 
 int main() {
     // This is a smaple implementation for reverse web-link application.
-    MapReduceMaster<string, string, string, string, string> masterInstance("website_source_targets.txt", ".", map_fn, reduce_fn);
+    MapReduceMaster<string, string, string, string, string> masterInstance("website_source_targets.txt", "ReverseWeblinkGraph", map_fn, reduce_fn);
     int result = masterInstance.process();
 
     // Now interpret the result of MapReduce

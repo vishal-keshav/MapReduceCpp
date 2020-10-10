@@ -16,14 +16,29 @@ map<T1, vector<T2>> read_text(string inputTextFile) {
     string line;
     T1 tempKey;
     T2 tempValue;
-    while(!file_temp.eof()) {
+    while (file_temp >> tempKey && file_temp >> tempValue){
+        if (tempKey.size() == 0) {
+            continue;
+        }
+        if (data.count(tempKey) == 0) {
+            vector<T2> tempValues{tempValue};
+            data.insert(pair<T1, vector<T2>>(tempKey, tempValues));
+        } else {
+            data[tempKey].push_back(tempValue);
+        }
+    }
+    /*while(!file_temp.eof()) {
 	    getline(file_temp, line);
         if (line.size() == 0) {
             continue;
         }
 	    istringstream iss(line);
-        do {
+        // Read key
+        while(iss) {
             iss >> tempKey;
+        }
+        // Read value
+        while(iss) {
             iss >> tempValue;
             if (data.count(tempKey) == 0) {
                 vector<T2> tempValues{tempValue};
@@ -31,8 +46,8 @@ map<T1, vector<T2>> read_text(string inputTextFile) {
             } else {
                 data[tempKey].push_back(tempValue);
             }
-        } while (iss);
-    }
+        }
+    }*/
     return data;
 }
 
