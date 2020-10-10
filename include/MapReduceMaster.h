@@ -79,7 +79,7 @@ template<typename k1, typename v1, typename k2, typename v2, typename v3>
 void reduce_worker(string outputResultDirectory, vector<v3> (*reduce_fn)(k2, vector<v2>)) {
     vector<string> tempFiles{"temp.txt"};
     map<k2, vector<v2>> reducer_key_value_data = read_text<k2, v2>(tempFiles[0]);
-    std::map<string, vector<int>> reduced_data;
+    std::map<k2, vector<v3>> reduced_data;
     for (auto elem : reducer_key_value_data) {
         reduced_data.insert(pair<k2, vector<v3>>(elem.first, reduce_fn(elem.first, elem.second)));
     }
