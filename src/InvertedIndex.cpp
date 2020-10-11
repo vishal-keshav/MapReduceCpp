@@ -1,6 +1,6 @@
 /*
 Use map-reduce library to implement the single process version of Inverted Index application. 
-It reads the file /data/input_InvInd.txt and lists all positions of a word in .
+It reads the file /data/InvertedIndexInput.txt and lists all positions of a word.
 */
 
 #include <iostream>
