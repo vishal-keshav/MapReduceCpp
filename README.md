@@ -1,6 +1,13 @@
 # MapReduceCpp
 An implementation of multithreaded version of MapReduce that simulates the fault tolerance on a single machine.
 
+## Contributors:
+Jessie Huo
+
+Vishal Keshav
+
+Kenneth Myers
+
 ## For the purpose of project evaluation, please follow the step-by-step guidlines
 ### Requirements
 * Since the the project is implemented in C++, you should have atleast C++17 installed on your system.
@@ -78,9 +85,3 @@ Reducer is a logical entity, which is implemented in the process() method of the
 ### Workers
 TODO
 
-## Contributors:
-Jessie Huo
-
-Vishal Keshav
-
-Kenneth Myers
