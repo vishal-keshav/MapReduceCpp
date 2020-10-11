@@ -83,5 +83,5 @@ Mapper is a logical entity, which is implemented in the process() method of the 
 Reducer is a logical entity, which is implemented in the process() method of the MapReduceMaster class.
 
 ### Workers
-TODO
+Implemented in the MapReduceMaster file. This will be moved out later on.
 

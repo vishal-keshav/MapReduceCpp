@@ -1,3 +1,8 @@
+/*
+ * This is a client application that uses MapReduce library.
+ * This client implements map reduce for ReverseWeblinkGraph application.
+ */
+
 #include <iostream>
 
 #include <iostream>

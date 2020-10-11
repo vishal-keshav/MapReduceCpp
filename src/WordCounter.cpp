@@ -1,6 +1,6 @@
 /*
  * This is a client application that uses MapReduce library.
- * The application this client implements through map reduce is word counter.
+ * This client implements map reduce for word counter application.
  */
 
 #include <iostream>

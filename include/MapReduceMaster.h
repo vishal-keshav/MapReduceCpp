@@ -1,3 +1,13 @@
+/*
+ * The header file contains the implmentation of MapReduceMaster and mapper/reducer
+ * workers. The class accepts a generic map/reduce UDF function from the client
+ * program. We support only one text file where each line in the text file is
+ * considered to be on record. The text file can have any data type, like string,
+ * int, float etc. Refer sample programs to understand the usage of APIs.
+ * 
+ * The current implementation uses a single thread for mapper and a single thread
+ * for reducer. This is sufficient for the first deadline submission.
+ */
 #pragma once
 
 #include <iostream>
