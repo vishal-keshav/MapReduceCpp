@@ -22,14 +22,14 @@ template<typename k1, typename v1, typename k2, typename v2, typename v3>
 int map_contoller(string inputFileName, vector<pair<k2, v2>> (*map_fn)(k1, v1), int nr_mapper);
 
 template<typename k1, typename v1, typename k2, typename v2, typename v3>
-void map_worker(string inputFileName, vector<pair<k2, v2>> (*map_fn)(k1, v1), int thread_id);
+void map_worker(string inputFileName, vector<pair<k2, v2>> (*map_fn)(k1, v1), int thread_id, int nr_mapper);
 
 // Declaration of reduce_worker
 template<typename k1, typename v1, typename k2, typename v2, typename v3>
 int reduce_controller(string outputResultDirectory, vector<v3> (*reduce_fn)(k2, vector<v2>), int nr_reducer);
 
 template<typename k1, typename v1, typename k2, typename v2, typename v3>
-void reduce_worker(string outputResultDirectory, vector<v3> (*reduce_fn)(k2, vector<v2>), int thread_id);
+void reduce_worker(string outputResultDirectory, vector<v3> (*reduce_fn)(k2, vector<v2>), int thread_id, int nr_reducer);
 
 /*
  * This is the main class that client instantiate in order to do map reduce.
@@ -51,9 +51,6 @@ public:
 
         // Call the reduce_controller, wait for the acknowlegement.
         int reduce_ack = reduce_controller<k1,v1,k2,v2,v3>(this->outputResultDirectory, this->reduce_fn, this->nr_reducer);
-        //thread reduce_worker_thread(reduce_worker<k1,v2,k2,v2,v3>,
-        //                this->outputResultDirectory, this->reduce_fn);
-        //reduce_worker_thread.join();
         return 0;
     }
 
@@ -80,7 +77,7 @@ int map_contoller(string inputFileName, vector<pair<k2, v2>> (*map_fn)(k1, v1),
     vector<thread> map_worker_threads;
     for (int i=0; i<nr_mapper; i++) {
         map_worker_threads.push_back(thread(map_worker<k1,v1,k2,v2,v3>,
-            inputFileName, map_fn, i));
+            inputFileName, map_fn, i, nr_mapper));
     }
     // Step 2: Wait for each thread workers to finish
     for (int i=0; i<nr_mapper; i++) {
@@ -92,19 +89,21 @@ int map_contoller(string inputFileName, vector<pair<k2, v2>> (*map_fn)(k1, v1),
 // Implementation of map_worker, must run in one thread.
 template<typename k1, typename v1, typename k2, typename v2, typename v3>
 void map_worker(string inputFileName, vector<pair<k2, v2>> (*map_fn)(k1, v1), 
-        int thread_id) {
+        int thread_id, int nr_mapper) {
     int record_number = 0;
     vector<vector<pair<k2, v2>>> all_processed_records;
     ifstream file(inputFileName);
     string str;
     while (getline(file, str)) {
-        vector<pair<k2,v2>> mapped_record = \
-            map_fn(to_string(record_number),str);
-        all_processed_records.push_back(mapped_record);
+        if (hash_in_range<int>(record_number, nr_mapper) == thread_id) {
+            vector<pair<k2,v2>> mapped_record = \
+                map_fn(to_string(record_number),str);
+            all_processed_records.push_back(mapped_record);
+        }
         record_number += 1;
     }
     // Write the all_processed_records in a temp file
-    std::ofstream fout("temp.txt");
+    std::ofstream fout("temp" + to_string(thread_id) + ".txt");
     for (auto record : all_processed_records) {
         for (auto elem : record) {
             fout << elem.first << " " << elem.second << " ";
@@ -121,7 +120,7 @@ int reduce_controller(string outputResultDirectory,
     vector<thread> reduce_worker_threads;
     for (int i=0; i<nr_reducer; i++) {
         reduce_worker_threads.push_back(thread(reduce_worker<k1,v1,k2,v2,v3>,
-            outputResultDirectory, reduce_fn, i));
+            outputResultDirectory, reduce_fn, i, nr_reducer));
     }
     for (int i=0; i<nr_reducer; i++) {
         reduce_worker_threads[i].join();
@@ -129,15 +128,34 @@ int reduce_controller(string outputResultDirectory,
     return 0;
 }
 
-// Implementation of reduce_worker, must run in one thread.
+// Implementation of reduce_worker
 template<typename k1, typename v1, typename k2, typename v2, typename v3>
-void reduce_worker(string outputResultDirectory, vector<v3> (*reduce_fn)(k2, vector<v2>), int thread_id) {
-    vector<string> tempFiles{"temp.txt"};
-    map<k2, vector<v2>> reducer_key_value_data = read_text<k2, v2>(tempFiles[0]);
-    std::map<k2, vector<v3>> reduced_data;
-    for (auto elem : reducer_key_value_data) {
+void reduce_worker(string outputResultDirectory, vector<v3> (*reduce_fn)(k2, vector<v2>), int thread_id, int nr_reducer) {
+    vector<string> tempFiles;
+    map<k2, vector<v2>> reducer_key_value_data;
+    map<k2, vector<v2>> reducer_key_value_data_filtered;
+    map<k2, vector<v3>> reduced_data;
+    for (int i=0; i<nr_reducer; i++) {
+        tempFiles.push_back("temp"+to_string(i)+".txt");
+    }
+    for (int i=0; i<nr_reducer; i++) {
+        reducer_key_value_data = read_text<k2, v2>(tempFiles[i]);
+        // Filter the data based on hash
+        for (auto elem : reducer_key_value_data) {
+            if (hash_in_range<k2>(elem.first, nr_reducer) != thread_id){
+                continue;
+            }
+            // Extend the vector<v2> on k2 if already exists
+            if (reducer_key_value_data_filtered.count(elem.first) == 0) {
+                reducer_key_value_data_filtered.insert(pair<k2, vector<v2>>(elem.first, elem.second));
+            } else {
+                reducer_key_value_data_filtered[elem.first].insert(reducer_key_value_data_filtered[elem.first].end(), elem.second.begin(), elem.second.end());
+            }
+        }
+    }
+    for (auto elem : reducer_key_value_data_filtered) {
         reduced_data.insert(pair<k2, vector<v3>>(elem.first, reduce_fn(elem.first, elem.second)));
     }
     // Save the data into output.txt file in the specified output directory.
-    write_map(outputResultDirectory + "_output.txt", reduced_data);
+    write_map(outputResultDirectory + "_output"+to_string(thread_id)+".txt", reduced_data);
 }

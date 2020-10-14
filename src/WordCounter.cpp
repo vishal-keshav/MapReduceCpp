@@ -47,6 +47,8 @@ vector<int> reduce_fn(string k, vector<int> values) {
 int main() {
     // This is a smaple implementation for word counter application.
     MapReduceMaster<string, string, string, int, int> masterInstance("WordCounterInput.txt", "WordCounter", map_fn, reduce_fn);
+    masterInstance.nr_mapper = 2;
+    masterInstance.nr_reducer = 2;
     int result = masterInstance.process();
 
     // Now interpred the result of MapReduce
