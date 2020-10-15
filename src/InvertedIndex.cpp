@@ -18,6 +18,8 @@ using namespace std;
 
 
 // user defined map function
+// inputs a line number k and string of words
+// returns a vector of key-value pairs containing each word and line number.
 vector<pair<string, int>> map_fn(string k, string value) { 
     // k is the number of the line (to_string(record number)), value is the line
     vector<pair<string, int>> ret;
@@ -26,6 +28,7 @@ vector<pair<string, int>> map_fn(string k, string value) {
     do {
         string word;
         iss >> word;
+        // loop over each word, push the word with this line number to array
         if(word.size() != 0) {
             // pair of the word and the line it is in
             ret.push_back(make_pair(word, stoi(k)));
@@ -35,6 +38,8 @@ vector<pair<string, int>> map_fn(string k, string value) {
 }
 
 // user defined reduce function
+// inputs the intermediate key-values, builds a vector of indexes, sorts and removes duplicates
+// returns vector of unique indexes in sorted order
 vector<int> reduce_fn(string k, vector<int> values) {
     vector<int> ret;
     for (int i = 0; i < values.size(); i++){

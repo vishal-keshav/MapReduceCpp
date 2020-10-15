@@ -1,6 +1,9 @@
 /*
  * This is a client application that uses MapReduce library.
  * This client implements map reduce for ReverseWeblinkGraph application.
+ * Mapper takes a file with a list of source-targets in format "[source],[target]"
+ * Reducer returs a file with a list of targets and all of the sources that point to them
+ * in format "target source1 [source2 ...]"
  */
 
 #include <iostream>
@@ -18,13 +21,13 @@
 
 using namespace std;
 
+// User defined function for mapper for reverse web-link graph
+// inputs a line number k and string corresponding to a source-target value
+// returns <target,source>
 vector<pair<string, string>> map_fn(string k, string value) {
-    //[TODO]
-    // pass the file that lists the scraped website source-targets
-    // map function accesses each line, splits on comma,
-    // returns <target,source>
     vector<pair<string, string>> ret;
     istringstream iss(value);
+    // loop over each line, split on comma, and push key-value pair to output
     while(iss.good()) {
         string source, target;
         getline(getline(iss, source, ','), target);
@@ -33,13 +36,14 @@ vector<pair<string, string>> map_fn(string k, string value) {
     return ret;
 }
 
+// User defined function for reducer for reverse web-link graph
+// inputs a given key (target) and vector source of sources
+// returns a vector of all sources associated with target
 vector<string> reduce_fn(string target, vector<string> source) {
-    //[TODO]
-    // for a given key (target) this will just create a 
-    // list of all of the sources that link to that target
-    // I think this could just return the source vector because
-    // it is already in the format we need but wrote it out anyway
+    // This could just return the source vector because
+    // it is already in the format we need but we wrote it out anyway to be explicit
     vector<string> sources;
+    // loop over sources in source vector, push them to new sources vector
     for (int i =0; i<source.size(); i++) {
         sources.push_back(source[i]);
     }
@@ -47,7 +51,7 @@ vector<string> reduce_fn(string target, vector<string> source) {
 }
 
 int main() {
-    // This is a smaple implementation for reverse web-link application.
+    // This is a sample implementation for reverse web-link application.
     MapReduceMaster<string, string, string, string, string> masterInstance("website_source_targets.txt", "ReverseWeblinkGraph", map_fn, reduce_fn);
     int result = masterInstance.process();
 

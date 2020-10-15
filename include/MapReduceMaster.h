@@ -94,6 +94,7 @@ void map_worker(string inputFileName, vector<pair<k2, v2>> (*map_fn)(k1, v1),
     vector<vector<pair<k2, v2>>> all_processed_records;
     ifstream file(inputFileName);
     string str;
+    // iterate over input file, apply map function to each line, collect intermediate key-value to all_processed_records
     while (getline(file, str)) {
         if (hash_in_range<int>(record_number, nr_mapper) == thread_id) {
             vector<pair<k2,v2>> mapped_record = \
@@ -122,6 +123,7 @@ int reduce_controller(string outputResultDirectory,
         reduce_worker_threads.push_back(thread(reduce_worker<k1,v1,k2,v2,v3>,
             outputResultDirectory, reduce_fn, i, nr_reducer));
     }
+    // Step 2: Wait for each thread workers to finish
     for (int i=0; i<nr_reducer; i++) {
         reduce_worker_threads[i].join();
     }
