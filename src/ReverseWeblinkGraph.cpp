@@ -50,10 +50,33 @@ vector<string> reduce_fn(string target, vector<string> source) {
     return sources;
 }
 
+class WordCounterMapReduce: public MapReduceInterface {
+public:
+    void map_fn(string key, string value) {
+        istringstream iss(value);
+        // loop over each line, split on comma, and push key-value pair to output
+        while(iss.good()) {
+            string source, target;
+            getline(getline(iss, source, ','), target);
+            emitIntermediate(target, source);
+        }
+    }
+
+    void reduce_fn(string key, vector<string> values) {
+        vector<string> sources;
+        // loop over sources in source vector, push them to new sources vector
+        for (int i =0; i<values.size(); i++) {
+            sources.push_back(values[i]);
+        }
+        emit(key, sources);
+    }
+};
+
 int main() {
     // This is a sample implementation for reverse web-link application.
-    MapReduceMaster<string, string, string, string, string> masterInstance("website_source_targets.txt", "ReverseWeblinkGraph", map_fn, reduce_fn);
-    int result = masterInstance.process();
+    MapReduceMaster masterInstance("website_source_targets.txt", "ReverseWeblinkGraph");
+    MapReduceInterface *func = new WordCounterMapReduce();
+    int result = masterInstance.process(func);
 
     // Now interpret the result of MapReduce
     if (result == -1){

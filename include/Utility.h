@@ -29,33 +29,23 @@ map<T1, vector<T2>> read_text(string inputTextFile) {
             data[tempKey].push_back(tempValue);
         }
     }
-    /*while(!file_temp.eof()) {
-	    getline(file_temp, line);
-        if (line.size() == 0) {
-            continue;
-        }
-	    istringstream iss(line);
-        // Read key
-        while(iss) {
-            iss >> tempKey;
-        }
-        // Read value
-        while(iss) {
-            iss >> tempValue;
-            if (data.count(tempKey) == 0) {
-                vector<T2> tempValues{tempValue};
-                data.insert(pair<T1, vector<T2>>(tempKey, tempValues));
-            } else {
-                data[tempKey].push_back(tempValue);
-            }
-        }
-    }*/
     return data;
 }
 
 // Takes an output file and the reduced data. Writes the data to the file in format "key value1 [value 2 ...]"
 template <typename T1, typename T2>
 void write_map(std::string outputFileName, std::map<T1, std::vector<T2>> data) {
+    ofstream fout(outputFileName);
+    for (auto elem : data) {
+        fout << elem.first << " ";
+        for (auto v : elem.second) {
+            fout << v << " ";
+        }
+        fout << '\n';
+    }
+}
+
+void write_key_val_vector(std::string outputFileName, std::vector<std::pair<std::string, std::vector<std::string>>> data) {
     ofstream fout(outputFileName);
     for (auto elem : data) {
         fout << elem.first << " ";
