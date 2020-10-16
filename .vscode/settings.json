@@ -48,6 +48,13 @@
         "random": "cpp",
         "set": "cpp",
         "string": "cpp",
-        "bit": "cpp"
+        "bit": "cpp",
+        "ctime": "cpp",
+        "chrono": "cpp",
+        "any": "cpp",
+        "ratio": "cpp",
+        "iomanip": "cpp",
+        "thread": "cpp",
+        "variant": "cpp"
     }
 }
