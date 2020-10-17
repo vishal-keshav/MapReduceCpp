@@ -18,6 +18,9 @@
 #include <map>
 #include <utility>
 
+#include "rpc/server.h"
+#include "rpc/client.h"
+
 #include "Utility.h"
 
 /*
@@ -52,11 +55,24 @@ public:
     MapReduceMaster(string f_name, string out_dir): inputFileName(f_name), outputResultDirectory(out_dir){}
 
     int process(MapReduceInterface *map_reduce_fn) {
-        // Call the map_contoller, wait for the acknowledgement.
-        int map_ack = map_controller_module(this->inputFileName, map_reduce_fn, this->nr_mapper);
+        // Start a server at port 8012
+        rpc::server server(8012);
+        server.bind("map", [&](string inputFileName) {
+            map_controller_module(inputFileName, map_reduce_fn, this->nr_mapper);
+            return;
+        });
+        server.bind("reduce", [&](string outputDir) {
+            reduce_controller_module(outputDir, map_reduce_fn, this->nr_reducer);
+            return;
+        });
+        server.async_run(1);
+        // Now instruct the map server to start mapping
+        rpc::client client("127.0.0.1", 8012);
+        client.call("map", this->inputFileName);
 
-        // Call the reduce_controller, wait for the acknowlegement.
-        int reduce_ack = reduce_controller_module(this->outputResultDirectory, map_reduce_fn, this->nr_reducer);
+        //Now ask server for reduction
+        client.call("reduce", this->outputResultDirectory);
+
         return 0;
     }
 
