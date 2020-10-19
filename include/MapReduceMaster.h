@@ -95,12 +95,14 @@ int map_controller_module(string inputFileName, MapReduceInterface *map_reduce_f
     vector<vector<pair<string, string>>> all_processed_records;
     ifstream file(inputFileName);
     string str;
+    // Iterate over the input file, apply map function to each line and increase record number
     while (getline(file, str)) {
         map_reduce_fn->map_fn(to_string(record_number),str);
         record_number += 1;
     }
     ofstream fout("temp.txt");
 
+    // Write intermediate key-value pairs to temp file
     for (auto elem : map_reduce_fn->emitted_intermediates) {
         fout << elem.first << " " << elem.second << '\n';
     }
@@ -113,6 +115,7 @@ int reduce_controller_module(string outputResultDirectory, MapReduceInterface *m
     string tempFile = "temp.txt";
     map<string, vector<string>> reducer_key_value_data = read_text<string, string>(tempFile);
     map<string, vector<string>> reducer_key_value_data_filtered;
+    // Loop over the intermediate key-values and combine values by key
     for (auto elem : reducer_key_value_data) {
         // Extend the vector<v2> on k2 if already exists
         if (reducer_key_value_data_filtered.count(elem.first) == 0) {
@@ -121,6 +124,7 @@ int reduce_controller_module(string outputResultDirectory, MapReduceInterface *m
             reducer_key_value_data_filtered[elem.first].insert(reducer_key_value_data_filtered[elem.first].end(), elem.second.begin(), elem.second.end());
         }
     }
+    // Loop over the combined key-values and apply the reduce function to each one
     for (auto elem : reducer_key_value_data_filtered) {
         map_reduce_fn->reduce_fn(elem.first, elem.second);
     }
