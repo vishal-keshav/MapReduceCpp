@@ -33,3 +33,6 @@
 *.exe
 *.out
 *.app
+
+# vscode settings - this was causing merge conflicts
+.vscode/
