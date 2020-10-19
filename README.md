@@ -69,6 +69,8 @@ A high level design of the library is shown below:
 
 `build` Automatically generated on building the project. Contains the intermediate compiled files and the compiled MapReduceCpp library.
 
+`spark` Contains the respective Spark codes for the three applications to check the correctness of our MapReduce implementation. Output is written to /build/WordCount_SparkOutput.txt, /build/InvertedIndex_SparkOutput.txt, and /build/ReverseWeblinkGraph_SparkOutput.txt. Need Spark installed.
+
 ## Project Implementation
 
 ### Master

@@ -5,8 +5,8 @@
  * considered to be on record. The text file can have any data type, like string,
  * int, float etc. Refer sample programs to understand the usage of APIs.
  * 
- * The current implementation uses a single thread for mapper and a single thread
- * for reducer. This is sufficient for the first deadline submission.
+ * Implementation or the first deadline submission uses a single thread for mapper 
+ * and a single thread for reducer.
  */
 #pragma once
 
@@ -129,5 +129,5 @@ int reduce_controller_module(string outputResultDirectory, MapReduceInterface *m
         map_reduce_fn->reduce_fn(elem.first, elem.second);
     }
     write_key_val_vector(outputResultDirectory + "_output.txt", map_reduce_fn->emitted_outputs);
-
+    return 0;
 }
