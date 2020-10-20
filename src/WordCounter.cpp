@@ -10,8 +10,8 @@
 #include <sstream>
 #include <vector>
 #include <map>
-
 #include <utility>
+#include <unistd.h>
 
 #include "MapReduceMaster.h"
 
@@ -40,7 +40,10 @@ MapReduceInterfaceFactoryRegistration<WordCounterMapReduce> _WordCounterMapReduc
 
 int main() {
     // This is a smaple implementation for word counter application.
-    MapReduceMaster masterInstance("WordCounterInput.txt", "WordCounterData", 2);
+    int nr_workers = 2;
+    string inputFileName = "WordCounterInput.txt";
+    string dataDirectory = "WordCounterData";
+    MapReduceMaster masterInstance(inputFileName, dataDirectory, nr_workers);
     int result = masterInstance.process();
 
     // Now interpred the result of MapReduce

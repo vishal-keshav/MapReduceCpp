@@ -42,7 +42,8 @@ MapReduceInterfaceFactoryRegistration<InvertedIndexMapReduce> _InvertedIndexMapR
 
 int main() {
     // Create master instance.
-    MapReduceMaster masterInstance("InvertedIndexInput.txt", "InvertedIndexData");
+    MapReduceMaster masterInstance("InvertedIndexInput.txt",
+                                   "InvertedIndexData");
     int result = masterInstance.process();
 
     // Now interpred the result of MapReduce

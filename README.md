@@ -55,6 +55,12 @@ Please check sample implementation of WordCounter in the file `src/WordCounter.c
 A high level design of the library is shown below:
 ![architecture](extra/DesignDiagram/high_level_design.png "High-level design")
 
+The interaction diagram is shown below:
+![interaction](extra/DesignDiagram/version2_distributed.png "Interaction diagram")
+
+The program uses N servers on different process. We ran the WordCounter program on 10 servers.
+The `sudo netstat -ltnp` terminal output is shown in the below snapshot:
+![server](extra/DesignDiagram/server_ports.png "Server listening on different ports on different process")
 
 ### Project Structure
 `doc` Contains documentation related to the project, how to build the project and other pointers relevant to C++ programming.
