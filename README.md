@@ -1,5 +1,5 @@
 # MapReduceCpp
-An implementation of multithreaded version of MapReduce that simulates the fault tolerance on a single machine.
+An implementation of distributed MapReduce that simulates the fault tolerance on a single machine.
 
 ## Contributors:
 Jessie Huo
@@ -8,7 +8,7 @@ Vishal Keshav
 
 Kenneth Myers
 
-## For the purpose of project evaluation, please follow the step-by-step guidlines
+## For the purpose of project evaluation, please follow the step-by-step guidelines
 ### Requirements
 * Since the the project is implemented in C++, you should have atleast C++17 installed on your system.
 * Since the project uses CMake to build the project (the MapReduce library and three use-case programs), CMake >= 3.15 should be installed on your system.
@@ -26,26 +26,28 @@ The MapReduceCpp is a header only library. The source code for the library can b
 
 #include "MapReduceMaster.h"
 
-vector<pair<key2, value2>> map_function(key1, value1) {
-    // Your map function implementation here
+class MyAwesomeMapReduce : MapReduceInterface {
+    void map_fn(string key, string value) {
+        // Your map function implementation here
+        // Dont forget to call emitIntermediate() on each key-value pair after mapping
+    }
+
+    void reduce_fn(string key, vector<string> value_list) {
+        // Your reduce function implementation here
+        // Dont forget to call emit() on each key-value_list pair after reduction
+    }
 }
 
-vector<value3> reduce_function(key2, vector<value2>) {
-    // Your reduce function implementation here
-}
+// Now register your awesome map reduce implementation
+MapReduceInterfaceFactoryRegistration<MyAwesomeMapReduce> _MyAwesomeMapReduce("MapReduce");
 
 int main() {
-    MapReduceMaster<key1, value1, key2, value2, value3> masterObj;
-    int status = masterObj.process(inputFile, outputFile, map_function, reduce_function, nr_mapper, nr_reducer);
-    if (status == 0) {
-        cout << "MapReduce completed" << endl;
-    }
+    MapReduceMaster masterObj("inputFileName.txt", "dataDirectory", Number_of_worker);
+    int status = masterObj.process();
     return 0;
 }
 
 ```
-
-Notice that typename `key1`, `value1`, `key2`, `value2` and `value3`. These are defined by the user of MapReduce library and depends on your signature of map and reduce function definition.
 
 Please check sample implementation of WordCounter in the file `src/WordCounter.cpp`, InvertedIndex in the file `src/invertedIndex.cpp` and ReverseWeblinkGraph in the file `src/ReverseWeblinkGraph.cpp` for more details.
 
@@ -74,7 +76,7 @@ A high level design of the library is shown below:
 ## Project Implementation
 
 ### Master
-Master is implemented by MapReduceMaster class, which initializes with the input file name, output file name, map function pointer, reduce function pointer, and number of worker threads. On calling the process function, it creates the several workers for map, waits for each of the thread to return a success signal, then creates and lanches workers for reduce. Once all threads are returned, the master returns with a success signal.
+Master is implemented by MapReduceMaster class, which initializes with the input file name, output file name, map function pointer, reduce function pointer, and number of worker threads. On calling the process function, it creates the several workers for map, waits for each of the thread to return a success signal, then creates and lanches workers for reduce. Once all workers are returned, the master returns with a success signal.
 
 The client program can invoke the process in a seperate thread without blocking, however, this is optional.
 

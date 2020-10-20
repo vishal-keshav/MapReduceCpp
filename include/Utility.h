@@ -13,7 +13,6 @@ template <typename T1, typename T2>
 map<T1, vector<T2>> read_text(string inputTextFile) {
     map<T1, vector<T2>> data;
     ifstream file_temp(inputTextFile);
-    string line;
     T1 tempKey;
     T2 tempValue;
     // Loop over the intermediate key-value pairs, push each value to an array that is mapped to each key
