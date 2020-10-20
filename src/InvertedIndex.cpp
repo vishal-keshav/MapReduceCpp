@@ -79,7 +79,7 @@ public:
 
 int main() {
     // Create master instance.
-    MapReduceMaster masterInstance("InvertedIndexInput.txt", "InvertedIndex");
+    MapReduceMaster masterInstance("InvertedIndexInput.txt", "InvertedIndexData");
     MapReduceInterface *func = new InvertedIndexMapReduce();
     int result = masterInstance.process(func);
 

@@ -74,7 +74,7 @@ public:
 
 int main() {
     // This is a sample implementation for reverse web-link application.
-    MapReduceMaster masterInstance("website_source_targets.txt", "ReverseWeblinkGraph");
+    MapReduceMaster masterInstance("ReverseWeblinkGraphInput.txt", "ReverseWeblinkGraphData");
     MapReduceInterface *func = new WordCounterMapReduce();
     int result = masterInstance.process(func);
 

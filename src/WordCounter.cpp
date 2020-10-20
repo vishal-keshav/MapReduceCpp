@@ -69,10 +69,10 @@ public:
 
 int main() {
     // This is a smaple implementation for word counter application.
-    MapReduceMaster masterInstance("WordCounterInput.txt", "WordCounter");
+    MapReduceMaster masterInstance("WordCounterInput.txt", "WordCounterData");
     MapReduceInterface* map_reduce_func = new WordCounterMapReduce();
-    masterInstance.nr_mapper = 2;
-    masterInstance.nr_reducer = 2;
+    //masterInstance.nr_mapper = 2;
+    //masterInstance.nr_reducer = 2;
     int result = masterInstance.process(map_reduce_func);
 
     // Now interpred the result of MapReduce
