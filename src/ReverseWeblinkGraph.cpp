@@ -25,7 +25,7 @@ class ReverseWeblinkGraphMapReduce: public MapReduceInterface {
 public:
     void map_fn(string key, string value) {
         istringstream iss(value);
-        // loop over each line, split on comma, and push key-value pair to output
+        // loop over each line, split on comma and push key-value pair to output
         while(iss.good()) {
             string source, target;
             getline(getline(iss, source, ','), target);
@@ -47,7 +47,8 @@ MapReduceInterfaceFactoryRegistration<ReverseWeblinkGraphMapReduce> _ReverseWebl
 
 int main() {
     // This is a sample implementation for reverse web-link application.
-    MapReduceMaster masterInstance("ReverseWeblinkGraphInput.txt", "ReverseWeblinkGraphData");
+    MapReduceMaster masterInstance("ReverseWeblinkGraphInput.txt",
+                                   "ReverseWeblinkGraphData");
     int result = masterInstance.process();
 
     // Now interpret the result of MapReduce
