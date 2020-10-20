@@ -3,7 +3,7 @@ from pyspark import SparkContext, SparkConf
 if __name__ == "__main__":
 
     # create Spark context with Spark configuration
-    conf = SparkConf().setAppName("Word Count")
+    conf = SparkConf().setAppName("Reverse Web-link Graph")
     sc = SparkContext(conf=conf)
 
     # read input file, split source,targets and return list of (target,source)
