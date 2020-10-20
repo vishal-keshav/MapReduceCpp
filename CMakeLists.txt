@@ -13,11 +13,11 @@ add_library(
     include/MapReduceMaster.h
     src/Temp.cpp
     )
-target_link_libraries(MapReduceCpp PUBLIC rpc pthread)
+# target_link_libraries(MapReduceCpp PUBLIC rpc pthread)
 
 add_executable(UnitTests
     test/UnitTest1.cpp)
-target_link_libraries(UnitTests PUBLIC gtest_main MapReduceCpp)
+target_link_libraries(UnitTests PUBLIC gtest_main MapReduceCpp rpc pthread)
 add_test(
     Name UnitTests
     COMMAND UnitTests
@@ -26,12 +26,12 @@ add_test(
 
 include_directories(${PROJECT_SOURCE_DIR}/include/)
 add_executable(WordCounter src/WordCounter.cpp)
-target_link_libraries(WordCounter PUBLIC MapReduceCpp)
+target_link_libraries(WordCounter PUBLIC MapReduceCpp rpc pthread)
 
 include_directories(${PROJECT_SOURCE_DIR}/include/)
 add_executable(InvertedIndex src/InvertedIndex.cpp)
-target_link_libraries(InvertedIndex PUBLIC MapReduceCpp)
+target_link_libraries(InvertedIndex PUBLIC MapReduceCpp rpc pthread)
 
 include_directories(${PROJECT_SOURCE_DIR}/include/)
 add_executable(ReverseWeblinkGraph src/ReverseWeblinkGraph.cpp)
-target_link_libraries(ReverseWeblinkGraph PUBLIC MapReduceCpp)
+target_link_libraries(ReverseWeblinkGraph PUBLIC MapReduceCpp rpc pthread)
