@@ -395,11 +395,95 @@ public:
             reduce_future_pool.push_back(client_pool[worker_idx]->async_call(
                 "reduce", worker_idx));
         }
-        
-        // Wait till all the them is completed with the reduce task.
-        for (int worker_idx = 0; worker_idx < nr_mapper; worker_idx++) {
-            cout << "Reduce: Waiting for server idx " << worker_idx << endl;
-            reduce_future_pool[worker_idx].wait();
+
+        // Implementation of heart-beat mechanism
+        // This loop will run unless all map task are done, where one server
+        // fault is taken care of by starting one server when fault is detected.
+        // The client sleeps for 1 seconds and then wake up to check two things:
+        // 1. If the servers are done with their work
+        // 2. If any of the server is dead.
+
+
+        // The reduce_task_status can be (0 == in-progress), (1 == done), 
+        // (2 == killed). each reduce_task starts with in-progress status
+        vector<int> reduce_task_status = vector<int>(nr_reducer, 0);
+        int nr_reduce_done = 0;
+        while (true) {
+            sleep(1);
+            // Iterate through all servers
+            for (int worker_idx = 0; worker_idx < nr_mapper; worker_idx++) {
+                // Test if reduce task on worker_idx is completed
+                if (reduce_task_status[worker_idx] == 1) {
+                    continue;
+                }
+                // At this point the server is still marked as "in-porgress".
+                // Check is this "in-porgress" server is killed.
+                if (is_server_down(client_pool[worker_idx])) {
+                    // Start a new server and bind the client to this server.
+                    cout << "Detected a server failure at PORT=" 
+                         << basePort + worker_idx << endl;
+                                    cout << "Starting Server: PID=" << getpid()
+                    << ", PORT=" << basePort + worker_idx << endl;
+                    pid_t pID = fork();
+                    if (pID == 0) {
+                        rpc::server srv(basePort + worker_idx);
+                        srv.bind("map", [&](int idx) {
+                            map_controller_module(this->inputFileName,
+                                                this->outputResultDirectory,
+                                                this->nr_mapper,
+                                                this->nr_reducer,
+                                                idx);
+                            map_completed = true;
+                            return;
+                        });
+                        srv.bind("reduce", [&](int idx) {
+                            reduce_controller_module(this->outputResultDirectory,
+                                                    this->nr_reducer,
+                                                    this->nr_mapper,
+                                                    idx);
+                            reduce_completed = true;
+                            return;
+                        });
+                        // [TODO]: Probably remove, we dont need this.
+                        srv.bind("exit", [&]() {
+                            rpc::this_session().post_exit();
+                        });
+                        srv.bind("is_map_done", [&]() {
+                            return map_completed;
+                        });
+                        srv.bind("is_reduce_done", [&]() {
+                            return reduce_completed;
+                        });
+                        srv.bind("stop_server", [&]() {
+                            rpc::this_server().stop();
+                            exit(0);
+                        });
+                        srv.run();
+                        return 0;
+                    }
+                    cout << "Server at PORT=" << basePort + worker_idx
+                         << " restarted" << endl;
+                    sleep(1);
+                    // Invoke the reduce task on this server.
+                    reduce_future_pool[worker_idx] = \
+                      client_pool[worker_idx]->async_call("reduce", worker_idx);
+                    cout << "Reduce task at PORT=" << basePort + worker_idx
+                         << " restarted" << endl;
+                    continue;
+                }
+                // At this point, the server is still alive and processing.
+                // Check if this server is done with the map task.
+                bool map_status = \
+                    client_pool[worker_idx]->call("is_reduce_done").as<bool>();
+                if (map_status) {
+                    reduce_task_status[worker_idx] = 1;
+                    nr_reduce_done += 1;
+                }
+            }
+            // Test if all reduce tasks are successfully done
+            if (nr_reduce_done == nr_reducer) {
+                break;
+            }
         }
 
         // Now stop all the server
