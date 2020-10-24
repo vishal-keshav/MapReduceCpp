@@ -140,6 +140,27 @@ public:
     vector<pair<string, vector<string>>> emitted_outputs;
 };
 
+/*
+ * Helper function that returns if the server to which the client is connected
+ * is not listening anymore.
+ */
+bool is_server_down(rpc::client *client) {
+    return (client->get_connection_state() == \
+        rpc::client::connection_state::disconnected);
+}
+
+/*
+ * A global variable that this process retains.
+ * For server processess, this global variable symbolizes if map task is done.
+ */
+bool map_completed = false;
+
+/*
+ * A global variable that this process retains.
+ * For server processess, this global variable symbolizes if reduce task is done
+ */
+bool reduce_completed = false;
+
 // Forward declaration of map_controller_module.
 int map_controller_module(string inputFileName,
                           string dataDirectory,
@@ -217,7 +238,6 @@ public:
     int process() {
         // Create nr_mapper == nr_reducer rpc servers (each is one map-reduce
         // worker running in a different process)
-        vector<rpc::server*> worker_pool;
         int basePort = 8420; //This is the port on which first workers binds to.
         // Rest of the workers will bind to port number which is 1 more than 
         // the previous worker. [TODO: explain it better]
@@ -236,6 +256,7 @@ public:
                                         this->nr_mapper,
                                         this->nr_reducer,
                                         idx);
+                    map_completed = true;
                     return;
                 });
                 srv.bind("reduce", [&](int idx) {
@@ -243,11 +264,18 @@ public:
                                             this->nr_reducer,
                                             this->nr_mapper,
                                             idx);
+                    reduce_completed = true;
                     return;
                 });
                 // [TODO]: Probably remove, we dont need this.
                 srv.bind("exit", [&]() {
                     rpc::this_session().post_exit();
+                });
+                srv.bind("is_map_done", [&]() {
+                    return map_completed;
+                });
+                srv.bind("is_reduce_done", [&]() {
+                    return reduce_completed;
                 });
                 srv.bind("stop_server", [&]() {
                     rpc::this_server().stop();
@@ -261,7 +289,7 @@ public:
         // Now create client pool, bind to the port where the servers are 
         // listening,
         // Wait for 1 second so that all servers are completely started
-        sleep(2);
+        sleep(1);
         vector<rpc::client*> client_pool;
         for(int i = 0; i<nr_mapper; i++) {
             client_pool.push_back(new rpc::client("localhost", basePort+i));
@@ -271,10 +299,94 @@ public:
             map_future_pool.push_back(client_pool[worker_idx]->async_call(
                 "map", worker_idx));
         }
-        // Wait till all of them is completed with the map.
-        for (int worker_idx = 0; worker_idx < nr_mapper; worker_idx++) {
-            cout << "Map: Waiting for server idx " << worker_idx << endl;
-            map_future_pool[worker_idx].wait();
+        // Implementation of heart-beat mechanism
+        // This loop will run unless all map task are done, where one server
+        // fault is taken care of by starting one server when fault is detected.
+        // The client sleeps for 1 seconds and then wake up to check two things:
+        // 1. If the servers are done with their work
+        // 2. If any of the server is dead.
+
+
+        // The map_task_status can be (0 == in-progress), (1 == done), 
+        // (2 == killed). each map_task starts with in-progress status
+        vector<int> map_task_status = vector<int>(nr_mapper, 0);
+        int nr_map_done = 0;
+        while(true) {
+            sleep(1);
+            // Iterate through all servers
+            for (int worker_idx = 0; worker_idx < nr_mapper; worker_idx++) {
+                // Test if map task on worker_idx is completed
+                if (map_task_status[worker_idx] == 1) {
+                    continue;
+                }
+                // At this point the server is still marked as "in-porgress".
+                // Check is this "in-porgress" server is killed.
+                if (is_server_down(client_pool[worker_idx])) {
+                    // Start a new server and bind the client to this server.
+                    cout << "Detected a server failure at PORT=" 
+                         << basePort + worker_idx << endl;
+                                    cout << "Starting Server: PID=" << getpid()
+                    << ", PORT=" << basePort + worker_idx << endl;
+                    pid_t pID = fork();
+                    if (pID == 0) {
+                        rpc::server srv(basePort + worker_idx);
+                        srv.bind("map", [&](int idx) {
+                            map_controller_module(this->inputFileName,
+                                                this->outputResultDirectory,
+                                                this->nr_mapper,
+                                                this->nr_reducer,
+                                                idx);
+                            map_completed = true;
+                            return;
+                        });
+                        srv.bind("reduce", [&](int idx) {
+                            reduce_controller_module(this->outputResultDirectory,
+                                                    this->nr_reducer,
+                                                    this->nr_mapper,
+                                                    idx);
+                            reduce_completed = true;
+                            return;
+                        });
+                        // [TODO]: Probably remove, we dont need this.
+                        srv.bind("exit", [&]() {
+                            rpc::this_session().post_exit();
+                        });
+                        srv.bind("is_map_done", [&]() {
+                            return map_completed;
+                        });
+                        srv.bind("is_reduce_done", [&]() {
+                            return reduce_completed;
+                        });
+                        srv.bind("stop_server", [&]() {
+                            rpc::this_server().stop();
+                            exit(0);
+                        });
+                        srv.run();
+                        return 0;
+                    }
+                    cout << "Server at PORT=" << basePort + worker_idx
+                         << " restarted" << endl;
+                    sleep(1);
+                    // Invoke the map task on this server.
+                    map_future_pool[worker_idx] = \
+                        client_pool[worker_idx]->async_call("map", worker_idx);
+                    cout << "Map task at PORT=" << basePort + worker_idx
+                         << " restarted" << endl;
+                    continue;
+                }
+                // At this point, the server is still alive and processing.
+                // Check if this server is done with the map task.
+                bool map_status = \
+                    client_pool[worker_idx]->call("is_map_done").as<bool>();
+                if (map_status) {
+                    map_task_status[worker_idx] = 1;
+                    nr_map_done += 1;
+                }
+            }
+            // Test if all map tasks are successfully done
+            if (nr_map_done == nr_mapper) {
+                break;
+            }
         }
 
         //Now ask server for reduce task
@@ -283,6 +395,7 @@ public:
             reduce_future_pool.push_back(client_pool[worker_idx]->async_call(
                 "reduce", worker_idx));
         }
+        
         // Wait till all the them is completed with the reduce task.
         for (int worker_idx = 0; worker_idx < nr_mapper; worker_idx++) {
             cout << "Reduce: Waiting for server idx " << worker_idx << endl;
