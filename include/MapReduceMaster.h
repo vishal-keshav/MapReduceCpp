@@ -281,7 +281,10 @@ public:
                     rpc::this_server().stop();
                     exit(0);
                 });
-                srv.run();
+                //srv.run();
+                srv.async_run(2);
+                int b;
+                cin >> b;
                 return 0;
             }
         }
@@ -294,11 +297,13 @@ public:
         for(int i = 0; i<nr_mapper; i++) {
             client_pool.push_back(new rpc::client("localhost", basePort+i));
         }
+        cout << "Client binding to all ports completed" << endl;
         vector<future<clmdep_msgpack::v1::object_handle>> map_future_pool;
         for (int worker_idx = 0; worker_idx < nr_mapper; worker_idx++) {
             map_future_pool.push_back(client_pool[worker_idx]->async_call(
                 "map", worker_idx));
         }
+        cout << "map tasks on all servers invoked" << endl;
         // Implementation of heart-beat mechanism
         // This loop will run unless all map task are done, where one server
         // fault is taken care of by starting one server when fault is detected.
@@ -325,10 +330,9 @@ public:
                     // Start a new server and bind the client to this server.
                     cout << "Detected a server failure at PORT=" 
                          << basePort + worker_idx << endl;
-                                    cout << "Starting Server: PID=" << getpid()
-                    << ", PORT=" << basePort + worker_idx << endl;
                     pid_t pID = fork();
                     if (pID == 0) {
+                        cout << "Server starting on PID=" << getpid() << endl;
                         rpc::server srv(basePort + worker_idx);
                         srv.bind("map", [&](int idx) {
                             map_controller_module(this->inputFileName,
@@ -361,12 +365,17 @@ public:
                             rpc::this_server().stop();
                             exit(0);
                         });
-                        srv.run();
+                        //srv.run();
+                        srv.async_run(2);
+                        int b;
+                        cin >> b;
                         return 0;
                     }
                     cout << "Server at PORT=" << basePort + worker_idx
                          << " restarted" << endl;
                     sleep(1);
+                    client_pool[worker_idx] = new rpc::client("localhost",
+                        basePort+worker_idx);
                     // Invoke the map task on this server.
                     map_future_pool[worker_idx] = \
                         client_pool[worker_idx]->async_call("map", worker_idx);
@@ -381,6 +390,8 @@ public:
                 if (map_status) {
                     map_task_status[worker_idx] = 1;
                     nr_map_done += 1;
+                } else {
+                    cout << worker_idx << " not yet completed" << endl;
                 }
             }
             // Test if all map tasks are successfully done
@@ -388,6 +399,7 @@ public:
                 break;
             }
         }
+        cout << "All servers successfully completed the mapping" << endl;
 
         //Now ask server for reduce task
         vector<future<clmdep_msgpack::v1::object_handle>> reduce_future_pool;
@@ -395,6 +407,7 @@ public:
             reduce_future_pool.push_back(client_pool[worker_idx]->async_call(
                 "reduce", worker_idx));
         }
+        cout << "reduce tasks on all servers invoked" << endl;
 
         // Implementation of heart-beat mechanism
         // This loop will run unless all map task are done, where one server
@@ -422,10 +435,9 @@ public:
                     // Start a new server and bind the client to this server.
                     cout << "Detected a server failure at PORT=" 
                          << basePort + worker_idx << endl;
-                                    cout << "Starting Server: PID=" << getpid()
-                    << ", PORT=" << basePort + worker_idx << endl;
                     pid_t pID = fork();
                     if (pID == 0) {
+                        cout << "Server starting on PID=" << getpid() << endl;
                         rpc::server srv(basePort + worker_idx);
                         srv.bind("map", [&](int idx) {
                             map_controller_module(this->inputFileName,
@@ -458,12 +470,17 @@ public:
                             rpc::this_server().stop();
                             exit(0);
                         });
-                        srv.run();
+                        //srv.run();
+                        srv.async_run(2);
+                        int b;
+                        cin >> b;
                         return 0;
                     }
                     cout << "Server at PORT=" << basePort + worker_idx
                          << " restarted" << endl;
                     sleep(1);
+                    client_pool[worker_idx] = new rpc::client("localhost",
+                        basePort+worker_idx);
                     // Invoke the reduce task on this server.
                     reduce_future_pool[worker_idx] = \
                       client_pool[worker_idx]->async_call("reduce", worker_idx);
@@ -473,11 +490,13 @@ public:
                 }
                 // At this point, the server is still alive and processing.
                 // Check if this server is done with the map task.
-                bool map_status = \
+                bool reduce_status = \
                     client_pool[worker_idx]->call("is_reduce_done").as<bool>();
-                if (map_status) {
+                if (reduce_status) {
                     reduce_task_status[worker_idx] = 1;
                     nr_reduce_done += 1;
+                } else {
+                    cout << worker_idx << " not yet completed" << endl;
                 }
             }
             // Test if all reduce tasks are successfully done
@@ -491,6 +510,7 @@ public:
             cout << "Stopping Server: PORT=" << basePort + worker_idx << endl;
             auto f = client_pool[worker_idx]->async_call("stop_server");
         }
+        cout << "All servers successfully completed the reducing" << endl;
         // Sleep for 1 second to let all server stop
         sleep(1);
         return 0;
@@ -547,6 +567,7 @@ int map_controller_module(string inputFileName,
     MapReduceInterface* map_reduce_fn = \
         MapReduceInterfaceFactory::get().getMapReduceInterface("MapReduce");
     int record_number = 0;
+    //sleep(10);
     ifstream file(dataDirectory + "/" + inputFileName);
     string str;
     // Iterate over the input file, apply map function to the line which hashes
@@ -614,6 +635,7 @@ int reduce_controller_module(string dataDirectory,
     MapReduceInterface* map_reduce_fn = \
         MapReduceInterfaceFactory::get().getMapReduceInterface("MapReduce");
     string tempFile;
+    //sleep(5);
     // Look for each temp file created by all mapper for this reducer to consume
     // and process (or reduce the data) in those files.
     // Each text file will be read in temporary key_value_temp variable.
