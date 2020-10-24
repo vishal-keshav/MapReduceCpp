@@ -60,7 +60,23 @@ The interaction diagram is shown below:
 
 The program uses N servers on different process. We ran the WordCounter program on 10 servers.
 The `sudo netstat -ltnp` terminal output is shown in the below snapshot:
-![server](extra/DesignDiagram/server_ports.png "Server listening on different ports on different process")
+![server](extra/server_ports.png "Server listening on different ports on different process")
+
+### Fault tolerance upto one server failure
+To test the fault tolerance of map and reduce operations (upto one failure), we did the following:
+1. Added pseudo work load (by adding sleep for 5 to 10 seconds) on the map and reduce workers.
+2. Started the WordCounter Program on two servers.
+3. Started tracking the process id for each ports (using command `netstat -nltp -c`)
+4. Randomly killed (using `kill -9 PID`) a map process listening on one of the ports.
+5. Randomly killed (using `kill -9 PID`) a reduce process listening on one of the ports.
+
+The result was:
+MapReduce library successfully recovered the failed server by detecting the server fail using heart-beat mechanism
+and started a new server listening on the old port. Following this, the map reduce library also
+called the map (or else reduce) task on the newly started server.
+
+A snapshot of the experiment is shown below:
+![server_failure](extra/server_fail_test.gif "Testing the fault-tolerance of the map-reduce library")
 
 ### Project Structure
 `doc` Contains documentation related to the project, how to build the project and other pointers relevant to C++ programming.
