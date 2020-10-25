@@ -440,20 +440,30 @@ public:
                         cout << "Server starting on PID=" << getpid() << endl;
                         rpc::server srv(basePort + worker_idx);
                         srv.bind("map", [&](int idx) {
-                            map_controller_module(this->inputFileName,
+                            int map_result = map_controller_module(this->inputFileName,
                                                 this->outputResultDirectory,
                                                 this->nr_mapper,
                                                 this->nr_reducer,
                                                 idx);
-                            map_completed = true;
+                            if (map_result==0) {
+                                map_completed = true;
+                            }
+                            else {
+                                map_completed = false;
+                            }
                             return;
                         });
                         srv.bind("reduce", [&](int idx) {
-                            reduce_controller_module(this->outputResultDirectory,
+                            int reduce_result = reduce_controller_module(this->outputResultDirectory,
                                                     this->nr_reducer,
                                                     this->nr_mapper,
                                                     idx);
-                            reduce_completed = true;
+                            if (reduce_result==0) {
+                                reduce_completed = true;
+                            }
+                            else {
+                                reduce_completed = false;
+                            }
                             return;
                         });
                         // [TODO]: Probably remove, we dont need this.
@@ -569,6 +579,10 @@ int map_controller_module(string inputFileName,
     int record_number = 0;
     //sleep(10);
     ifstream file(dataDirectory + "/" + inputFileName);
+    if (!file.good()) {
+        std::cerr << "Could not find file " << inputFileName << " in directory " << dataDirectory << ". Double check that file location is correct.\n";
+        return -1;
+    }
     string str;
     // Iterate over the input file, apply map function to the line which hashes
     // to mapper_id (this mapper).
