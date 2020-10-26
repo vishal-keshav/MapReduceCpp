@@ -76,6 +76,8 @@ and started a new server listening on the old port. Following this, the map redu
 called the map (or else reduce) task on the newly started server.
 
 A snapshot of the experiment is shown below:
+
+
 ![server_failure](extra/server_fail_test.gif "Testing the fault-tolerance of the map-reduce library")
 
 ### Project Structure
