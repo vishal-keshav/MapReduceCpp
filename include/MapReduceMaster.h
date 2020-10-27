@@ -715,8 +715,8 @@ int reduce_controller_module(string dataDirectory,
         try {
             map_reduce_fn->reduce_fn(elem.first, elem.second);
         } catch(int e) {
-            cout << "Exception occured while applying map function" << endl;
-            return -2;
+            cout << "Exception occured while applying reduce function" << endl;
+            return -3;
         }
     }
     // Write the data to output text file in the dataDirectory
