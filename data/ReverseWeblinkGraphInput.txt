@@ -8,3 +8,15 @@ google.com,facebook.com
 facebook.com,wikipedia.com
 facebook.com,twitter.com
 facebook.com,nytimes.com
+abc.com,xyz.com
+xyz.com,myspace.com
+wikipedia.org,xyz.com
+wikipedia.org,abc.com
+government.gov,agency.gov
+agency.gov,twitter.com
+government.gov,wikipedia.org
+government.gov,fbi.gov
+xyz.com,abc.com
+agency.gov,fbi.gov
+twitter.com,wikipedia.org
+facebook.com,wikipedia.org
