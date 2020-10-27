@@ -14,6 +14,7 @@ echo "-----------------------------------------------------------------"
 echo "Copying the WordCounter input data into WordCounterData directory"
 echo "-----------------------------------------------------------------"
 mkdir WordCounterData
+cp ../extra/config_WordCounter.txt .
 cp ../data/WordCounterInput.txt WordCounterData
 echo "-------------------------------------------------------------------------------------------------------"
 echo "Executing WordCounter program, the temporary and the outputs are generated in WordCounterData directory"
@@ -24,6 +25,7 @@ echo "---------------------------------------------------------------------"
 echo "Copying the InvertedIndex input data into InvertedIndexData directory"
 echo "---------------------------------------------------------------------"
 mkdir InvertedIndexData
+cp ../extra/config_InvertedIndex.txt .
 cp ../data/InvertedIndexInput.txt InvertedIndexData
 echo "-----------------------------------------------------------------------------------------------------------"
 echo "Executing InvertedIndex program, the temporary and the outputs are generated in InvertedIndexData directory"
@@ -34,6 +36,7 @@ echo "--------------------------------------------------------------------------
 echo "Copying the ReverseWeblinkGraph input data into ReverseWeblinkGraphData directory"
 echo "----------------------------------------------------------------------------"
 mkdir ReverseWeblinkGraphData
+cp ../extra/config_ReverseWeblinkGraph.txt .
 cp ../data/ReverseWeblinkGraphInput.txt ReverseWeblinkGraphData
 echo "-----------------------------------------------------------------------------------------------------------------------"
 echo "Executing ReverseWeblinkGraph program, the temporary and the outputs are generated in ReverseWeblinkGraphData directory"
