@@ -50,7 +50,7 @@ int main() {
     int nr_workers;
     string inputFileName;
     string dataDirectory;
-    ifstream file("config_InvertedIndex.txt");
+    ifstream file("config_ReverseWeblinkGraph.txt");
     string str;
     while (getline(file, str)) {
         istringstream in(str);

@@ -251,19 +251,25 @@ public:
                      << ", PORT=" << basePort + i << endl;
                 rpc::server srv(basePort + i);
                 srv.bind("map", [&](int idx) {
-                    map_controller_module(this->inputFileName,
-                                        this->outputResultDirectory,
-                                        this->nr_mapper,
-                                        this->nr_reducer,
-                                        idx);
+                    int e = map_controller_module(this->inputFileName,
+                                                  this->outputResultDirectory,
+                                                  this->nr_mapper,
+                                                  this->nr_reducer,
+                                                  idx);
+                    // [TODO]: Currently errors are printed on std::cout
+                    // Write to the global variable that work has been done.
+                    // This variable will be polled from the master.
                     map_completed = true;
                     return;
                 });
                 srv.bind("reduce", [&](int idx) {
-                    reduce_controller_module(this->outputResultDirectory,
-                                            this->nr_reducer,
-                                            this->nr_mapper,
-                                            idx);
+                    int e = reduce_controller_module(this->outputResultDirectory,
+                                                     this->nr_reducer,
+                                                     this->nr_mapper,
+                                                     idx);
+                    // [TODO]: Currently errors are printed on std::cout
+                    // Write to the global variable that work has been done.
+                    // This variable will be polled from the master.
                     reduce_completed = true;
                     return;
                 });
@@ -281,10 +287,14 @@ public:
                     rpc::this_server().stop();
                     exit(0);
                 });
-                //srv.run();
+                //srv.run(); [TODO]: Remove this.
+                // Run this server in two thread. One thread will handle the 
+                // map reduce, the other will be used to signal the master
+                // the status of global work_done variable. This is a part
+                // of heart-beat mechanism.
                 srv.async_run(2);
                 int b;
-                cin >> b;
+                cin >> b; // This is a blocking call.
                 return 0;
             }
         }
@@ -335,24 +345,23 @@ public:
                         cout << "Server starting on PID=" << getpid() << endl;
                         rpc::server srv(basePort + worker_idx);
                         srv.bind("map", [&](int idx) {
-                            int map_result = map_controller_module(this->inputFileName,
-                                                this->outputResultDirectory,
-                                                this->nr_mapper,
-                                                this->nr_reducer,
-                                                idx);
-                            if (map_result==0) {
-                                map_completed = true;
-                            }
-                            else {
-                                map_completed = false;
-                            }
+                            int e = map_controller_module(
+                                        this->inputFileName,
+                                        this->outputResultDirectory,
+                                        this->nr_mapper,
+                                        this->nr_reducer,
+                                        idx);
+                            // [TODO]: Error is currently printed on std::cout
+                            map_completed = true;
                             return;
                         });
                         srv.bind("reduce", [&](int idx) {
-                            reduce_controller_module(this->outputResultDirectory,
-                                                    this->nr_reducer,
-                                                    this->nr_mapper,
-                                                    idx);
+                            int e = reduce_controller_module(
+                                        this->outputResultDirectory,
+                                        this->nr_reducer,
+                                        this->nr_mapper,
+                                        idx);
+                            // [TODO]: Error is currently printed on std::cout
                             reduce_completed = true;
                             return;
                         });
@@ -370,10 +379,13 @@ public:
                             rpc::this_server().stop();
                             exit(0);
                         });
-                        //srv.run();
+                        // Run this server in two thread. One thread will handle
+                        // the map reduce, the other will be used to signal the 
+                        // master the status of global work_done variable. This 
+                        // is a part of heart-beat mechanism.
                         srv.async_run(2);
                         int b;
-                        cin >> b;
+                        cin >> b; // This is a blocking call.
                         return 0;
                     }
                     cout << "Server at PORT=" << basePort + worker_idx
@@ -445,30 +457,22 @@ public:
                         cout << "Server starting on PID=" << getpid() << endl;
                         rpc::server srv(basePort + worker_idx);
                         srv.bind("map", [&](int idx) {
-                            int map_result = map_controller_module(this->inputFileName,
-                                                this->outputResultDirectory,
-                                                this->nr_mapper,
-                                                this->nr_reducer,
-                                                idx);
-                            if (map_result==0) {
-                                map_completed = true;
-                            }
-                            else {
-                                map_completed = false;
-                            }
+                            int e = map_controller_module(
+                                        this->inputFileName,
+                                        this->outputResultDirectory,
+                                        this->nr_mapper,
+                                        this->nr_reducer,
+                                        idx);
+                            map_completed = true;
                             return;
                         });
                         srv.bind("reduce", [&](int idx) {
-                            int reduce_result = reduce_controller_module(this->outputResultDirectory,
-                                                    this->nr_reducer,
-                                                    this->nr_mapper,
-                                                    idx);
-                            if (reduce_result==0) {
-                                reduce_completed = true;
-                            }
-                            else {
-                                reduce_completed = false;
-                            }
+                            int e = reduce_controller_module(
+                                        this->outputResultDirectory,
+                                        this->nr_reducer,
+                                        this->nr_mapper,
+                                        idx);
+                            reduce_completed = true;
                             return;
                         });
                         // [TODO]: Probably remove, we dont need this.
@@ -485,10 +489,13 @@ public:
                             rpc::this_server().stop();
                             exit(0);
                         });
-                        //srv.run();
+                        // Run this server in two thread. One thread will handle
+                        // the map reduce, the other will be used to signal the 
+                        // master the status of global work_done variable. This 
+                        // is a part of heart-beat mechanism.
                         srv.async_run(2);
                         int b;
-                        cin >> b;
+                        cin >> b; // This is a blocking call.
                         return 0;
                     }
                     cout << "Server at PORT=" << basePort + worker_idx
@@ -571,9 +578,13 @@ int hash_in_range(d data, int max_range) {
  * 5. Once all files are written (all temp_m_r.txt files), the server doing the
  *    map job returns a success signal back to the master (who is acting as a 
  *    client).
+ * Error codes:
+ *    -1 : If file or the directory is not present.
+ *    -2 : If user supplied map function cannot be applied.
+ *     0 : If temporary files are produced successfully. 
  */
 
-// [TODO] Add the failure return code.
+// 
 int map_controller_module(string inputFileName,
                           string dataDirectory,
                           int nr_mapper,
@@ -582,10 +593,13 @@ int map_controller_module(string inputFileName,
     MapReduceInterface* map_reduce_fn = \
         MapReduceInterfaceFactory::get().getMapReduceInterface("MapReduce");
     int record_number = 0;
+    // Adding some sleep to add pseudo work on the server.
     //sleep(10);
     ifstream file(dataDirectory + "/" + inputFileName);
     if (!file.good()) {
-        std::cerr << "Could not find file " << inputFileName << " in directory " << dataDirectory << ". Double check that file location is correct.\n";
+        cout << "Could not find file " << inputFileName << " in directory " 
+             << dataDirectory 
+             << ". Double check if file or directory is correct" << endl;
         return -1;
     }
     string str;
@@ -597,10 +611,9 @@ int map_controller_module(string inputFileName,
         if (hash_in_range(record_number, nr_mapper) == mapper_id) {
             try{
                 map_reduce_fn->map_fn(to_string(record_number),str);
-            }
-            catch {
-                std::cerr << "Error in applying map function to record number " << to_string(record_number) << " in file " << inputFileName;
-                return -2
+            } catch(int e) {
+                cout << "Exception occured while applying map function" << endl;
+                return -2;
             }
         }
         record_number += 1;
@@ -651,8 +664,11 @@ int map_controller_module(string inputFileName,
  *    reduce_fn inside MapReduceInterface object.
  * 3. After the vector is fully formed, each key-list_of_values are written to
  *    output_[reducer_id].txt 
+ * Error codes:
+ *    -1 : If file or directory is not present
+ *    -2 : If user reduce function cannot be applied
+ *     0 : If final output files are generated sucessfully
  */
-// [TODO] Add the failure return code.
 int reduce_controller_module(string dataDirectory,
                              int nr_reducer,
                              int nr_mapper,
@@ -671,7 +687,13 @@ int reduce_controller_module(string dataDirectory,
     for (int mapper_idx = 0; mapper_idx < nr_mapper; mapper_idx++) {
         tempFile = dataDirectory + "/temp_" + to_string(mapper_idx)
             + "_" + to_string(reducer_id) + ".txt";
-        key_value_temp = read_text<string, string>(tempFile);
+        try {
+            key_value_temp = read_text<string, string>(tempFile);
+        } catch(int e) {
+            cout << "Could not find directory " << dataDirectory 
+                 << ". Double check if directory is correct" << endl;
+            return -1;
+        }
         // Accumulated this data in key_value_accumulated by extending the value
         // vector of key_value_accumulated
         for (auto elem : key_value_temp) {
@@ -690,13 +712,11 @@ int reduce_controller_module(string dataDirectory,
     }
     // Now apply reduction, the key-list_of_values will be emitted in the vector
     for (auto elem : key_value_acc) {
-        try{
-                map_reduce_fn->reduce_fn(elem.first, elem.second);
-            }
-            catch {
-                std::cerr << "Error in applying reduce function to record number " << elem.first << " : " << elem.second;
-                return -3
-            }
+        try {
+            map_reduce_fn->reduce_fn(elem.first, elem.second);
+        } catch(int e) {
+            cout << "Exception occured while applying map function" << endl;
+            return -2;
         }
     }
     // Write the data to output text file in the dataDirectory
