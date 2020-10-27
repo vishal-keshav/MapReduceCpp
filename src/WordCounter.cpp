@@ -39,10 +39,26 @@ public:
 MapReduceInterfaceFactoryRegistration<WordCounterMapReduce> _WordCounterMapReduce("MapReduce");
 
 int main() {
+    // set the parameters by configuration
+    int nr_workers;
+    string inputFileName;
+    string dataDirectory;
+    ifstream file("config_WordCounter.txt");
+    string str;
+    while (getline(file, str)) {
+        istringstream in(str);
+        vector<string> v;
+        string s;
+        while (in >> s) {
+            v.push_back(s);
+        }
+        if (v[0] == "N_WORKER") nr_workers = stoi(v[1]);
+        else if (v[0] == "INPUTFILE") inputFileName = v[1];
+        else if (v[0] == "DATADIR") dataDirectory = v[1];
+        else;
+    }
+
     // This is a smaple implementation for word counter application.
-    int nr_workers = 2;
-    string inputFileName = "WordCounterInput.txt";
-    string dataDirectory = "WordCounterData";
     MapReduceMaster masterInstance(inputFileName, dataDirectory, nr_workers);
     int result = masterInstance.process();
 
