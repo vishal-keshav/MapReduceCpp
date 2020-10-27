@@ -43,6 +43,28 @@ echo "Executing ReverseWeblinkGraph program, the temporary and the outputs are g
 echo "-----------------------------------------------------------------------------------------------------------------------"
 ./ReverseWeblinkGraph
 
+echo "-------------------------------------------------------------------------------------------------"
+echo "Now running the PySpark program to generate the expected output."
+echo "Please make sure you have Python3 and PySpark installed in your system, else this test will fail"
+echo "-------------------------------------------------------------------------------------------------"
+
+cd ..
+python3 spark/WordCount.py
+echo "----------------------------------------------------------------------------"
+echo "PySpark output of WordCounter Application generated in build/WordCounterData"
+echo "----------------------------------------------------------------------------"
+
+python3 spark/ReverseWeblinkGraph.py
+echo "--------------------------------------------------------------------------------------------"
+echo "PySpark output of ReverseWeblinkGraph Application generated in build/ReverseWeblinkGraphData"
+echo "--------------------------------------------------------------------------------------------"
+
+python3 spark/InvertedIndex.py 
+echo "--------------------------------------------------------------------------------"
+echo "PySpark output of InvertedIndex Application generated in build/InvertedIndexData"
+echo "--------------------------------------------------------------------------------"
+
 echo "------------------"
 echo "All tasks are done"
 echo "------------------"
+

@@ -5,7 +5,7 @@ from pyspark import SparkContext, SparkConf
 if __name__ == "__main__":
 
      # read the input file (in /data) and write each line to a separate file (write to /tmp)
-    f = open("../data/InvertedIndexInput.txt")
+    f = open("data/InvertedIndexInput.txt")
     lines = f.readlines()
     f.close()
     line_cnt = 0
@@ -44,7 +44,7 @@ if __name__ == "__main__":
     ls = reduced.collect()
     output = list()
     output.append(format(ls))
-    f = open("../build/InvertedIndex_SparkOutput.txt", "w")
+    f = open("build/InvertedIndexData/InvertedIndex_SparkOutput.txt", "w")
     for each in output:
         f.write(each)
     f.close()
