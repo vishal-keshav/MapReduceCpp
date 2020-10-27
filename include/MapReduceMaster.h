@@ -504,7 +504,7 @@ public:
                     continue;
                 }
                 // At this point, the server is still alive and processing.
-                // Check if this server is done with the map task.
+                // Check if this server is done with the reduce task.
                 bool reduce_status = \
                     client_pool[worker_idx]->call("is_reduce_done").as<bool>();
                 if (reduce_status) {
@@ -595,7 +595,13 @@ int map_controller_module(string inputFileName,
     // pair in a vector.
     while (getline(file, str)) {
         if (hash_in_range(record_number, nr_mapper) == mapper_id) {
-            map_reduce_fn->map_fn(to_string(record_number),str);
+            try{
+                map_reduce_fn->map_fn(to_string(record_number),str);
+            }
+            catch {
+                std::cerr << "Error in applying map function to record number " << to_string(record_number) << " in file " << inputFileName;
+                return -2
+            }
         }
         record_number += 1;
     }
@@ -684,7 +690,14 @@ int reduce_controller_module(string dataDirectory,
     }
     // Now apply reduction, the key-list_of_values will be emitted in the vector
     for (auto elem : key_value_acc) {
-        map_reduce_fn->reduce_fn(elem.first, elem.second);
+        try{
+                map_reduce_fn->reduce_fn(elem.first, elem.second);
+            }
+            catch {
+                std::cerr << "Error in applying reduce function to record number " << elem.first << " : " << elem.second;
+                return -3
+            }
+        }
     }
     // Write the data to output text file in the dataDirectory
     write_key_val_vector(dataDirectory + "/output_"
