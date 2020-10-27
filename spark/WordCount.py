@@ -1,3 +1,4 @@
+
 from pyspark import SparkContext, SparkConf
 
 if __name__ == "__main__":
@@ -7,7 +8,7 @@ if __name__ == "__main__":
     sc = SparkContext(conf=conf)
 
     # read input file and split each document into words
-    words = sc.textFile('../data/WordCounterInput.txt').flatMap(lambda line: line.split(" "))
+    words = sc.textFile('data/WordCounterInput.txt').flatMap(lambda line: line.split())
 
     # count the occurrence of each word
     wordCounts = words.map(lambda word: (word, 1)).reduceByKey(lambda v1, v2:v1+v2)
@@ -16,7 +17,7 @@ if __name__ == "__main__":
     # write output in a text file
     output = list()
     output.append(format(word_list))
-    f = open("../build/WordCount_SparkOutput.txt", "w")
+    f = open("build/WordCounterData/WordCount_SparkOutput.txt", "w")
     for each in output:
         f.write(each)
     f.close()
