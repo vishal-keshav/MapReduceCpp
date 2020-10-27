@@ -335,12 +335,17 @@ public:
                         cout << "Server starting on PID=" << getpid() << endl;
                         rpc::server srv(basePort + worker_idx);
                         srv.bind("map", [&](int idx) {
-                            map_controller_module(this->inputFileName,
+                            int map_result = map_controller_module(this->inputFileName,
                                                 this->outputResultDirectory,
                                                 this->nr_mapper,
                                                 this->nr_reducer,
                                                 idx);
-                            map_completed = true;
+                            if (map_result==0) {
+                                map_completed = true;
+                            }
+                            else {
+                                map_completed = false;
+                            }
                             return;
                         });
                         srv.bind("reduce", [&](int idx) {
