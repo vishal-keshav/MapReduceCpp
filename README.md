@@ -81,7 +81,7 @@ A snapshot of the experiment is shown below:
 ![server_failure](extra/server_fail_test.gif "Testing the fault-tolerance of the map-reduce library")
 
 ### Project Structure
-`doc` Contains documentation related to the project, how to build the project and other pointers relevant to C++ programming.
+`docs` Contains documentation related to the project, how to build the project and other pointers relevant to C++ programming.
 
 `include` Contains header files of the MapReduceCpp library.
 
@@ -98,18 +98,4 @@ A snapshot of the experiment is shown below:
 `spark` Contains the respective Spark codes for the three applications to check the correctness of our MapReduce implementation. Output is written to /build/WordCount_SparkOutput.txt, /build/InvertedIndex_SparkOutput.txt, and /build/ReverseWeblinkGraph_SparkOutput.txt. Need Spark installed.
 
 ## Project Implementation
-
-### Master
-Master is implemented by MapReduceMaster class, which initializes with the input file name, output file name, map function pointer, reduce function pointer, and number of worker threads. On calling the process function, it creates the several workers for map, waits for each of the thread to return a success signal, then creates and lanches workers for reduce. Once all workers are returned, the master returns with a success signal.
-
-The client program can invoke the process in a seperate thread without blocking, however, this is optional.
-
-### Mapper
-Mapper is a logical entity, which is implemented in the process() method of the MapReduceMaster class.
-
-### Reducer
-Reducer is a logical entity, which is implemented in the process() method of the MapReduceMaster class.
-
-### Workers
-Implemented in the MapReduceMaster file. This will be moved out later on.
-
+Refer the Documentation in the `docs` folder for more details. See the inline comments in the MapReduceMaster.h file for more implementation details.
