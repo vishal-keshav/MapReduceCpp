@@ -49,6 +49,8 @@ echo "Please make sure you have Python3 and PySpark installed in your system, el
 echo "-------------------------------------------------------------------------------------------------"
 
 cd ..
+export PYSPARK_PYTHON=/usr/bin/python3
+export PYSPARK_DRIVER_PYTHON=/usr/bin/ipython
 python3 spark/WordCount.py
 echo "----------------------------------------------------------------------------"
 echo "PySpark output of WordCounter Application generated in build/WordCounterData"

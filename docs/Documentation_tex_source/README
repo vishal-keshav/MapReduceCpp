@@ -1,0 +1,17 @@
+TEMPLATE PROPOSAL SKRIPSI
+Program Studi D-IV Komputasi Statistik
+Politeknik Statistika STIS
+========================================
+
+Template ini terdiri dari 2 file utama:
+1. Proposal.tex
+   Merupakan file konten proposal dalam format LaTeX yang dapat diedit. 
+   Silakan mengubah isi dari file ini sesuai dengan konten proposal penelitian.
+
+2. Proposal.bib
+   Merupakan file yang berisi daftar referensi/pustaka untuk menunjang konten
+   proposal penelitian.
+   File ini ditulis dalam format BibTeX yang kompatibel dengan LaTeX dan
+   sangat mudah digunakan.
+   
+Selamat menulis proposal.
