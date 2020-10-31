@@ -1,26 +1,23 @@
 # MapReduceCpp
-An implementation of distributed MapReduce that simulates the fault tolerance on a single machine.
+MapReduceCpp is a distributed multi-threaded multi-process fault tolerant implementation of Map-reduce system.
+Implementation is done completely in C++. Three sample map-reduce program is also implemented.
 
-## Contributors:
-Jessie Huo
+This project is a part of course COMPSCI 532: Systems for data science.
+On October 31st 2020, we are making this project public.
 
-Vishal Keshav
-
-Kenneth Myers
-
-## For the purpose of project evaluation, please follow the step-by-step guidelines
 ### Requirements
-* Since the the project is implemented in C++, you should have atleast C++17 installed on your system.
-* Since the project uses CMake to build the project (the MapReduce library and three use-case programs), CMake >= 3.15 should be installed on your system.
+* C++17 or better.
+* CMake 3.15 or better.
+
 ### Script to automatically build and run sample programs.
 `sh script.sh`
 
-Running this command builds the `libMapReduceCpp.so` library, builds three sample program namely `WordCounter`, `InvertedIndex` and `ReverseWeblinkGaph` (and links the library to these programs). All the builds are placed in a directory `build` (will be created automatically). The output of the three programs are also placed in the `build` director (WordCounter_output.txt, InvertedIndex_output.txt and ReverseWeblinkGraph_output.txt). Please check the corresponding inputs to these program in the `data` directory.
+Running this command builds the `libMapReduceCpp.so` library, builds three sample program namely `WordCounter`, `InvertedIndex` and `ReverseWeblinkGaph` (and links the library to these programs). All the builds are placed in a directory `build` (will be created automatically). The output of the three programs are also placed in the `build` director (WordCounter_output.txt, InvertedIndex_output.txt and ReverseWeblinkGraph_output.txt).
 
 ## Project details
 
 ### Implementation
-The MapReduceCpp is a header only library. The source code for the library can be found in `include` directory. Most importantly, `include/MapReduceMaster.h` is the entry point to use this library. This header file when included into a program, provided the access to an object `MapReduceMaster` and an API `process()` to start the processing. Refer below the pseudo program to understand the API.
+The MapReduceCpp is a header only library. The source code for the library can be found in `include` directory. `include/MapReduceMaster.h` is the entry point to use this library. This header file when included into a program, provided the access to an object `MapReduceMaster` and an API `process()` to start the processing. Clients are also required to implement MapReduceInterface and register the user-defined map and reduce function. For APIs, please refer the sample below:
 
 ```C++
 
@@ -58,12 +55,12 @@ A high level design of the library is shown below:
 The interaction diagram is shown below:
 ![interaction](extra/DesignDiagram/version2_distributed.png "Interaction diagram")
 
-The program uses N servers on different process. We ran the WordCounter program on 10 servers.
+The program uses N servers on different process. WordCounter was run on 10 servers.
 The `sudo netstat -ltnp` terminal output is shown in the below snapshot:
 ![server](extra/server_ports.png "Server listening on different ports on different process")
 
 ### Fault tolerance upto one server failure
-To test the fault tolerance of map and reduce operations (upto one failure), we did the following:
+To test the fault tolerance of map and reduce operations (upto one failure), below steps were following:
 1. Added pseudo work load (by adding sleep for 5 to 10 seconds) on the map and reduce workers.
 2. Started the WordCounter Program on two servers.
 3. Started tracking the process id for each ports (using command `netstat -nltp -c`)
@@ -76,8 +73,6 @@ and started a new server listening on the old port. Following this, the map redu
 called the map (or else reduce) task on the newly started server.
 
 A snapshot of the experiment is shown below:
-
-
 ![server_failure](extra/server_fail_test.gif "Testing the fault-tolerance of the map-reduce library")
 
 ### Project Structure
